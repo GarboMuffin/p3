@@ -47,6 +47,8 @@
   const handleLargeAssetFetchProgress = ({detail}) => {
     if (detail.asset.startsWith('nwjs-')) {
       $progress.text = $_('progress.loadingNwjs');
+    } else if (detail.asset.startsWith('electron-')) {
+      $progress.text = 'Loading electron';
     }
     $progress.progress = detail.progress;
   };
@@ -364,6 +366,12 @@
     <label>
       <input type="radio" bind:group={$options.target} value="nwjs-linux-x64">
       {$_('options.nwjs-linux64')}
+    </label>
+  </div>
+  <div class="environment-section">
+    <label>
+      <input type="radio" bind:group={$options.target} value="electron-linux64">
+      Electron Linux application (64-bit only)
     </label>
   </div>
 </Section>

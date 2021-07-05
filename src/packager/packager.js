@@ -316,6 +316,162 @@ cd "$(dirname "$0")"
     return zip;
   }
 
+  async addElectron (projectZip) {
+    const buffer = await this.fetchLargeAsset(this.options.target);
+    const electronZip = await (await getJSZip()).loadAsync(buffer);
+
+    const isWindows = this.options.target.includes('win');
+    const isMac = this.options.target.includes('mac');
+    const isLinux = this.options.target.includes('linux');
+
+    // Electron Windows/Linux folder structure:
+    // * (root)
+    // +-- electron.exe (executable)
+    // +-- LICENSES.chromium.html
+    // +-- ...
+
+    const zip = new (await getJSZip());
+    const packageName = this.options.app.packageName;
+    for (const path of Object.keys(electronZip.files)) {
+      const file = electronZip.files[path];
+      // Create an inner folder inside the zip
+      let newPath = `${packageName}/${path}`;
+      // Rename the executable file
+      if (isWindows) {
+        newPath = newPath.replace('electron.exe', `${packageName}.exe`);
+      } else if (isMac) {
+        // TODO
+      } else if (isLinux) {
+        newPath = newPath.replace(/electron$/, packageName);
+      }
+      setFileFast(zip, newPath, file);
+    }
+
+    const ICON_NAME = 'icon.png';
+    const icon = await getAppIcon(this.options.app.icon);
+    const manifest = {
+      name: packageName,
+      main: 'main.js'
+    };
+
+    let dataPrefix;
+    if (isWindows) {
+      dataPrefix = `${packageName}/`;
+    } else if (isMac) {
+      // TODO
+    } else if (isLinux) {
+      const startScript = `#!/bin/bash
+cd "$(dirname "$0")"
+./${packageName} .`;
+      zip.file(`${packageName}/start.sh`, startScript, {
+        unixPermissions: 0o100755
+      });
+      dataPrefix = `${packageName}/`;
+    }
+    for (const path of Object.keys(projectZip.files)) {
+      setFileFast(zip, dataPrefix + path, projectZip.files[path]);
+    }
+
+    zip.file(`${dataPrefix}${ICON_NAME}`, icon);
+    zip.file(`${dataPrefix}package.json`, JSON.stringify(manifest, null, 4));
+    zip.file(`${dataPrefix}main.js`, `'use strict';
+const {app, BrowserWindow, Menu, shell, screen} = require('electron');
+const path = require('path');
+
+const isWindows = process.platform === 'win32';
+const isMac = process.platform === 'darwin';
+const isLinux = process.platform === 'linux';
+
+if (isMac) {
+  // TODO
+  Menu.setApplicationMenu(Menu.buildFromTemplate([
+    { role: 'appMenu' },
+    { role: 'fileMenu' },
+    { role: 'editMenu' },
+    { role: 'viewMenu' },
+    { role: 'windowMenu' },
+    { role: 'help' }
+  ]));
+} else {
+  Menu.setApplicationMenu(null);
+}
+
+const isSafeOpenExternal = (url) => {
+  try {
+    const parsedUrl = new URL(url);
+    return parsedUrl.protocol === 'https:' || parsedUrl.protocol === 'http:';
+  } catch (e) {
+    // ignore
+  }
+  return false;
+};
+
+const createWindow = () => {
+  const options = {
+    width: ${this.options.stageWidth},
+    height: ${this.options.stageHeight},
+    useContentSize: true,
+    minWidth: 50,
+    minHeight: 50,
+    icon: path.resolve('${ICON_NAME}'),
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true
+    }
+  };
+
+  const activeScreen = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
+  const bounds = activeScreen.workArea;
+  options.x = bounds.x + ((bounds.width - options.width) / 2);
+  options.y = bounds.y + ((bounds.height - options.height) / 2);
+
+  const window = new BrowserWindow(options);
+  window.loadFile('index.html');
+};
+
+const acquiredLock = app.requestSingleInstanceLock();
+if (acquiredLock) {
+  app.enableSandbox();
+
+  app.on('web-contents-created', (event, contents) => {
+    // TODO: new-window is deprecated
+    contents.on('new-window', (e, url) => {
+      e.preventDefault();
+      if (isSafeOpenExternal(url)) {
+        shell.openExternal(url);
+      }
+    });
+    contents.on('will-navigate', (e, url) => {
+      e.preventDefault();
+      if (isSafeOpenExternal(url)) {
+        shell.openExternal(url);
+      }
+    });
+  });
+
+  app.on('window-all-closed', () => {
+    app.quit();
+  });
+
+  app.on('second-instance', () => {
+    createWindow();
+  });
+
+  app.whenReady().then(() => {
+    createWindow();
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    });
+  });
+} else {
+  app.quit();
+}
+`);
+
+    return zip;
+  }
+
   makeWebSocketProvider () {
     return `new Scaffolding.Cloud.WebSocketProvider(${JSON.stringify(this.options.cloudVariables.cloudHost)}, "${this.options.projectId}")`;
   }
@@ -738,6 +894,8 @@ cd "$(dirname "$0")"
 
       if (this.options.target.startsWith('nwjs-')) {
         zip = await this.addNwJS(zip);
+      } else if (this.options.target.startsWith('electron-')) {
+        zip = await this.addElectron(zip);
       }
 
       return {

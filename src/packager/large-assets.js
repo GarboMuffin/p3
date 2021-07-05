@@ -23,6 +23,11 @@ module.exports = {
     sha256: '53651a3a12d29ad096cff5b44d9f1e3aa09e9fad970bdcfe8bda07ea23d960d8',
     type: 'arraybuffer'
   },
+  'electron-linux64': {
+    src: LARGE_ASSET_BASE + 'electron-v13.1.5-linux-x64.zip',
+    sha256: '363c7df85375c919b06e449843715e0252a53743b82aed0c9ed22921c5a83234',
+    type: 'arraybuffer'
+  },
   scaffolding: {
     src: 'scaffolding.js',
     estimatedSize: 4775503,
