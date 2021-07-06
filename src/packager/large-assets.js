@@ -24,8 +24,8 @@ module.exports = {
     type: 'arraybuffer'
   },
   'electron-linux64': {
-    src: LARGE_ASSET_BASE + 'electron-v13.1.5-linux-x64.zip',
-    sha256: '363c7df85375c919b06e449843715e0252a53743b82aed0c9ed22921c5a83234',
+    src: LARGE_ASSET_BASE + 'electron-v13.1.6-linux-x64.zip',
+    sha256: '6f28af0a3ccb20b0d2e4f26ea4698d5b89b81e860cbd40a446c2a8223fdf0101',
     type: 'arraybuffer'
   },
   scaffolding: {
