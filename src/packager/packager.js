@@ -6,6 +6,7 @@ import largeAssets from './large-assets';
 import xhr from './lib/xhr';
 import pngToAppleICNS from './lib/icns';
 import assetCache from './cache';
+import generateAsar from './lib/generate-asar';
 
 const PROGRESS_LOADED_SCRIPTS = 0.1;
 const PROGRESS_LOADED_JSON_BUT_NEED_ASSETS = 0.2;
@@ -362,7 +363,7 @@ cd "$(dirname "$0")"
     } else if (isLinux) {
       const startScript = `#!/bin/bash
 cd "$(dirname "$0")"
-./${packageName} .`;
+./${packageName}`;
       zip.file(`${packageName}/start.sh`, startScript, {
         unixPermissions: 0o100755
       });
@@ -373,7 +374,16 @@ cd "$(dirname "$0")"
     }
 
     zip.file(`${dataPrefix}${ICON_NAME}`, icon);
-    zip.file(`${dataPrefix}package.json`, JSON.stringify(manifest, null, 4));
+    zip.file(`${dataPrefix}resources/default_app.asar`, generateAsar([
+      {
+        path: 'package.json',
+        data: new TextEncoder().encode(JSON.stringify(manifest))
+      },
+      {
+        path: 'main.js',
+        data: new TextEncoder().encode('require("../../main.js")')
+      }
+    ]));
     zip.file(`${dataPrefix}main.js`, `'use strict';
 const {app, BrowserWindow, Menu, shell, screen} = require('electron');
 const path = require('path');
@@ -427,7 +437,7 @@ const createWindow = () => {
   options.y = bounds.y + ((bounds.height - options.height) / 2);
 
   const window = new BrowserWindow(options);
-  window.loadFile('index.html');
+  window.loadFile('../../index.html');
 };
 
 const acquiredLock = app.requestSingleInstanceLock();
