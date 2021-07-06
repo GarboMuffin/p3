@@ -429,7 +429,9 @@ const createWindow = () => {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true
-    }
+    },
+    show: false,
+    backgroundColor: ${JSON.stringify(this.options.appearance.background)}
   };
 
   const activeScreen = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
@@ -438,6 +440,9 @@ const createWindow = () => {
   options.y = bounds.y + ((bounds.height - options.height) / 2);
 
   const window = new BrowserWindow(options);
+  window.once('ready-to-show', () => {
+    window.show();
+  });
   window.loadFile('../../index.html');
 };
 
