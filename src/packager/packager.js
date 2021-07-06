@@ -384,6 +384,7 @@ cd "$(dirname "$0")"
         data: new TextEncoder().encode('require("../../main.js")')
       }
     ]));
+    zip.file(`${dataPrefix}package.json`, JSON.stringify(manifest));
     zip.file(`${dataPrefix}main.js`, `'use strict';
 const {app, BrowserWindow, Menu, shell, screen} = require('electron');
 const path = require('path');
