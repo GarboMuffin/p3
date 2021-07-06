@@ -23,6 +23,11 @@ module.exports = {
     sha256: '53651a3a12d29ad096cff5b44d9f1e3aa09e9fad970bdcfe8bda07ea23d960d8',
     type: 'arraybuffer'
   },
+  'electron-win32': {
+    src: LARGE_ASSET_BASE + 'electron-v13.1.6-win32-ia32.zip',
+    sha256: 'bb6f34548879c9813897e2b023d195bf8b735198687db4448e19a13f71d77766',
+    type: 'arraybuffer'
+  },
   'electron-linux64': {
     src: LARGE_ASSET_BASE + 'electron-v13.1.6-linux-x64.zip',
     sha256: '6f28af0a3ccb20b0d2e4f26ea4698d5b89b81e860cbd40a446c2a8223fdf0101',

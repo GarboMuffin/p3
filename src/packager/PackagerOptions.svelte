@@ -370,6 +370,10 @@
   </div>
   <div class="environment-section">
     <label>
+      <input type="radio" bind:group={$options.target} value="electron-win32">
+      Electron Windows application (32-bit or 64-bit)
+    </label>
+    <label>
       <input type="radio" bind:group={$options.target} value="electron-linux64">
       Electron Linux application (64-bit only)
     </label>
