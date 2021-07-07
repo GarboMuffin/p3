@@ -13,6 +13,7 @@
   "license": "LGPL-3.0-only",
   "dependencies": {
     "@fiahfy/icns": "0.0.7",
+    "chromium-pickle-js": "^0.2.0",
     "comlink": "^4.3.1",
     "fastestsmallesttextencoderdecoder": "^1.0.22",
     "jszip": "3.1.5",

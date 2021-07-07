@@ -48,6 +48,8 @@
   const handleLargeAssetFetchProgress = ({detail}) => {
     if (detail.asset.startsWith('nwjs-')) {
       $progress.text = $_('progress.loadingNwjs');
+    } else if (detail.asset.startsWith('electron-')) {
+      $progress.text = 'Loading electron';
     }
     $progress.progress = detail.progress;
   };
@@ -377,24 +379,36 @@
       {$_('options.nwjs-linux64')}
     </label>
   </div>
+  <div class="environment-section">
+    <label>
+      <input type="radio" bind:group={$options.target} value="electron-win32">
+      <!-- TODO: translate -->
+      Electron Windows application (32-bit or 64-bit)
+    </label>
+    <label>
+      <input type="radio" bind:group={$options.target} value="electron-linux64">
+      <!-- TODO: translate -->
+      Electron Linux application (64-bit only)
+    </label>
+  </div>
 </Section>
 
-{#if $options.target.startsWith('nwjs-')}
+{#if $options.target.startsWith('nwjs-') || $options.target.startsWith('electron-')}
   <div in:fade|local>
     <Section accent="#FF661A">
-      <!-- don't translate NW.js -->
-      <h2>NW.js</h2>
+      <!-- TODO: translate -->
+      <h2>Application Settings</h2>
       <label>
         {$_('options.packageName')}
         <input type="text" bind:value={$options.app.packageName}>
       </label>
 
-      {#if $options.target.startsWith('nwjs-win')}
+      {#if $options.target.includes('win')}
         <div>
           <h2>{$_('nwjs.furtherStepsWin')}</h2>
           <p>To change the executable icon or create an installer program, download and run <a href="https://github.com/TurboWarp/packager-extras/releases">TurboWarp Packager Extras</a> and select the output of this website.</p>
         </div>
-      {:else if $options.target === 'nwjs-mac'}
+      {:else if $options.target.includes('mac')}
         <h2>{$_('nwjs.furtherStepsMac')}</h2>
         <p>macOS support is still experimental.</p>
         <p>Due to Apple policy, packaging for their platforms is rather troublesome. You either have to:</p>
@@ -402,12 +416,16 @@
           <li>Pay Apple $100/year for a developer account to sign and notarize the app (we do not have a tutorial for this as we can't afford that and don't want to support such practices), or</li>
           <li>Instruct users to ignore Gatekeeper by opening Finder > Navigating to the application > Right click > Open > Open again</li>
         </ul>
-        <p>NW.js runs natively on Intel Macs but will use Rosetta on Apple silicon Macs.</p>
-        <p>For further help and steps, see <a href="https://docs.nwjs.io/en/latest/For%20Users/Package%20and%20Distribute/#mac-os-x">NW.js Documentation</a>.</p>
-      {:else if $options.target.startsWith('nwjs-linux')}
+        {#if $options.target.includes('nwjs')}
+          <p>NW.js runs natively on Intel Macs but will use Rosetta on Apple silicon Macs.</p>
+          <p>For further help and steps, see <a href="https://docs.nwjs.io/en/latest/For%20Users/Package%20and%20Distribute/#mac-os-x">NW.js Documentation</a>.</p>
+        {/if}
+      {:else if $options.target.includes('linux')}
         <h2>{$_('nwjs.furtherStepsLinux')}</h2>
         <p>Linux support is still experimental.</p>
-        <p>For further help and steps, see <a href="https://docs.nwjs.io/en/latest/For%20Users/Package%20and%20Distribute/#linux">NW.js Documentation</a>.</p>
+        {#if $options.target.includes('nwjs')}
+          <p>For further help and steps, see <a href="https://docs.nwjs.io/en/latest/For%20Users/Package%20and%20Distribute/#linux">NW.js Documentation</a>.</p>
+        {/if}
       {/if}
     </Section>
   </div>
